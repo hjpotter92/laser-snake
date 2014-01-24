@@ -1,6 +1,4 @@
-import pygame
-import random
-import sys
+import pygame, random, sys, json
 from snake import *
 from ordinates import *
 from pygame.locals import *
@@ -10,21 +8,14 @@ screen = pygame.display
 font = pygame.font
 display = pygame.display
 
+f = open( 'config.json', 'r' ).read()
+print json.loads(f)
+"""
 pygame.init()
 s = screen.set_mode( (1024, 576) )
 screen.set_caption( 'Laser Snake' )
 
 def main():
-    directions = {
-        'UP': 0,
-        'LEFT': 1,
-        'DOWN': 2,
-        'RIGHT': 3,
-        0: 'UP',
-        1: 'LEFT',
-        2: 'DOWN',
-        3: 'RIGHT'
-    }
     while True:
         clock.tick(30)
         s.fill( (192,192,192) )
@@ -46,3 +37,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""
