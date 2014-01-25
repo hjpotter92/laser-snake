@@ -1,5 +1,6 @@
 {
 	"screenH": 576,
 	"screenW": 1024,
-	"version": "0.1.0.0"
+	"version": "0.1.0.0",
+	"port": 7997
 }
