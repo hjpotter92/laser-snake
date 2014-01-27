@@ -11,12 +11,16 @@ class Server:
 		self.players = {}
 
 	def receiveJoinRequest( self, info, address ):
-		self.players[address] = {
-			'id': len(self.players) + 1,
-			'name': info['name']
-		}
+		if address not in self.players:
+			self.players[address] = {
+				'id': len(self.players) + 1,
+				'name': info['name']
+			}
 		return self.players[address]['id']
 		
+	def receiveReadyRequest( self, info, address ):
+		self.players[address]['ready'] = True
+		print info, "READY"
 
 	def receive( self ):
 		while True:
@@ -29,6 +33,17 @@ class Server:
 							'id': self.receiveJoinRequest( request['info'], address )
 						}
 						self.socket.sendto( json.dumps(reply), address )
+					elif request['cmd'] == 'READY':
+						self.receiveReadyRequest( request['info'], address )
+					elif request['cmd'] == 'START':
+						print "START"
+					elif request['cmd'] == 'SNAKEDATA':
+						print "DATA"
+					elif request['cmd'] == 'QUIT':
+						print "QUIT"
+					else:
+						self.receiveInvalidRequest( address )
+		
 			except socket.error:
 				pass
 
