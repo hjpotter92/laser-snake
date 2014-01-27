@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import socket, json
 from player import Player
 
@@ -60,6 +62,10 @@ class Client:
 		reply = json.loads( data_receive )
 		print reply
 
+	def receiveCountDownRequest( self ):
+		data_receive = self.socket.recv( self.packet_size )
+		
+
 	def receiveData( self ):
 		while True:
 			rcvd = self.socket.recv( 1024 )
@@ -71,9 +77,7 @@ if __name__ == "__main__":
 	port = raw_input( "Enter server port: " )
 	cl = Client( name, ip, int(port) )
 	cl.sendJoinRequest()
-	choice = raw_input ( "Are you ready? ")
+	choice = raw_input ( "Are you ready? (yes/no) ")
 	if 'yes' in choice.lower():
 		cl.sendReadyRequest()
-	
-	
-
+	cl.receiveCountDown()

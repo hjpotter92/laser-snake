@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import socket, json
 from player import Player
 
@@ -10,40 +12,51 @@ class Server:
 		print "Established connection on {} over {}".format( host, port )
 		self.players = {}
 
-	def receiveJoinRequest( self, info, address ):
-		if address not in self.players:
-			self.players[address] = {
-				'id': len(self.players) + 1,
-				'name': info['name']
-			}
-		return self.players[address]['id']
+	def receiveJoinRequest( self, request, address ):
+		self.players[address] = {
+			'id': len(self.players) + 1,
+			'name': request['info']['name'],
+			'ready': False,
+			'playing' : True
+		}
+		reply = self.players[address]
+		self.socket.sendto( json.dumps(reply), address )
 		
-	def receiveReadyRequest( self, info, address ):
+	def receiveReadyRequest( self, request, address ):
 		self.players[address]['ready'] = True
-		print info, "READY"
+		print self.players[address]['name']+ ' is ' + ' READY'
 
+	def receiveStartRequest( self, request, address ):
+		if address in self.players and self.players[address]['id'] == 1:
+			self.startCountDown()
+		else:
+			reply = 'Only the player who joined first can start the game.'
+			self.socket.sendto( json.dumps(reply), address )
+			
+	def receiveSnakeDataReuqest( self, request, address ):
+		self.players[address][snake] = request['info']
+		for address in self.players:
+			self.socket.sendto( json.dumps(self.players[address]), address )
+
+	def receiveQuitRequest( self, request, address ):
+		self.players[address]['playing'] = False
+		for address in self.players:
+			self.socket.sendto( json.dumps(self.players[address]), address )			
+				
+	handler = {
+		'JOIN': receiveJoinRequest,
+		'READY': receiveReadyRequest,
+		'START': receiveStartRequest,
+		'SNAKEDATA': receiveSnakeDataReuqest,
+		'QUIT': receiveQuitRequest
+	}
+	
 	def receive( self ):
 		while True:
 			try:
 				receive_data, address = self.socket.recvfrom( 1024 )
 				request = json.loads( receive_data )
-				if 'cmd' in request:
-					if request['cmd'] == 'JOIN':
-						reply = {
-							'id': self.receiveJoinRequest( request['info'], address )
-						}
-						self.socket.sendto( json.dumps(reply), address )
-					elif request['cmd'] == 'READY':
-						self.receiveReadyRequest( request['info'], address )
-					elif request['cmd'] == 'START':
-						print "START"
-					elif request['cmd'] == 'SNAKEDATA':
-						print "DATA"
-					elif request['cmd'] == 'QUIT':
-						print "QUIT"
-					else:
-						self.receiveInvalidRequest( address )
-		
+				self.handler[request['cmd']]( self, request, address )
 			except socket.error:
 				pass
 
