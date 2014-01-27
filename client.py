@@ -1,4 +1,4 @@
-import socket, cPickle as pickle
+import socket, json
 from player import Player
 
 class Client:
@@ -7,8 +7,18 @@ class Client:
 		self.socket = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 		self.server = ( ip, port )
 
-	def sendName( self ):
-		self.socket.sendto( pickle.dumps(self.player), self.server )
+	def sendJoinRequest( self ):
+		join_header = {
+			'cmd': 'JOIN',
+			'info': {
+				'name': self.player.getNick()
+			}
+		}
+		self.socket.sendto( json.dumps(join_header), self.server )
+		data_receive = self.socket.recv( 1024 )
+		reply = json.loads( data_receive )
+		self.player.setPlayerId( reply['id'] )
+		print self.player.getPlayerId()
 
 	def receiveData( self ):
 		while True:
@@ -20,5 +30,4 @@ if __name__ == "__main__":
 	ip = raw_input( "Enter server address: " )
 	port = raw_input( "Enter server port: " )
 	cl = Client( name, ip, int(port) )
-	cl.sendName()
-	cl.receiveData()
+	cl.sendJoinRequest()

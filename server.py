@@ -1,4 +1,4 @@
-import socket, json, cPickle as pickle
+import socket, json
 from player import Player
 
 class Server:
@@ -8,17 +8,27 @@ class Server:
 		self.socket.bind( (host, port) )
 		# self.socket.listen( 4 )
 		print "Established connection on {} over {}".format( host, port )
-		self.list_users = {}
+		self.players = {}
+
+	def receiveJoinRequest( self, info, address ):
+		self.players[address] = {
+			'id': len(self.players) + 1,
+			'name': info['name']
+		}
+		return self.players[address]['id']
+		
 
 	def receive( self ):
 		while True:
 			try:
-				data, addr = self.socket.recvfrom( 1024 )
-				pl = pickle.loads( data )
-				print '{} connected from {}'.format( pl.getNick(), addr[0] )
-				self.socket.sendto( '{} users tracked.'.format(len( self.list_users )), addr )
-				if addr not in self.list_users:
-					self.list_users[addr] = data
+				receive_data, address = self.socket.recvfrom( 1024 )
+				request = json.loads( receive_data )
+				if 'cmd' in request:
+					if request['cmd'] == 'JOIN':
+						reply = {
+							'id': self.receiveJoinRequest( request['info'], address )
+						}
+						self.socket.sendto( json.dumps(reply), address )
 			except socket.error:
 				pass
 
