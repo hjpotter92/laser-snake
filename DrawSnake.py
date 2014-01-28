@@ -19,7 +19,7 @@ SIZE = (1024, 576)
 head = [200, 50]
 tail = [50, 50]
 fps = 50
-speed = 5
+speed = 3
 food_radius = 5
 
 class window:
@@ -42,7 +42,6 @@ class window:
 		self.s = self.screen.set_mode(SIZE)
 		self.screen.set_caption( 'Laser Snake' )
 		pygame.mouse.set_visible(0)
-
 	key_handler = {
 		K_UP: Point(0, -1),
 		K_DOWN: Point(0, 1),
@@ -55,16 +54,16 @@ class window:
 			self.clock.tick(fps)
 			self.s.fill(WHITE)
 			self.screen.update()
-			self.snake.updateSnake(speed)
-			
+			for i in xrange( speed ):
+				self.snake.updateSnake()
 			for food in self.snake.food.foods:
-				pygame.draw.circle(self.s, GREEN, toList(food[0]), food[1], 0)				
+				pygame.draw.circle(self.s, GREEN, toList(food[0]), food[1], 0)
 			pygame.draw.aalines(self.s, BLUE, False, map( toList, self.snake.points ), 15)
 
 			for event in pygame.event.get():
 				if event.type == QUIT:
 					sys.exit(0)
-				if event.type == KEYDOWN:					
+				if event.type == KEYDOWN:
 					if event.key in self.key_handler:
 						self.snake.updateDirection( self.key_handler[event.key] )
 					elif event.key == K_ESCAPE:
@@ -74,7 +73,6 @@ class window:
 def main():
 	w_obj = window()
 	w_obj.updateScreen()
-              
+
 if __name__ == "__main__":
     main()
-
