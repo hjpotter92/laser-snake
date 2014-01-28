@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
-import Snake
-from pygame.locals import *
+import sys
 import pygame
+import Snake
+from Point import *
+from pygame.locals import *
+
+
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -14,11 +18,13 @@ SIZE = (1024, 576)
 
 head = [200, 50]
 tail = [50, 50]
-fps = 60
+fps = 50
+speed = 5
+food_radius = 5
 
 class window:
 	corners = list()
-	def __init__(self, snake = Snake.Snake() ):
+	def __init__(self, snake = Snake.Snake()):
 		self.snake = snake
 		self.clock = pygame.time.Clock()
 		if not self.clock:
@@ -37,41 +43,37 @@ class window:
 		self.screen.set_caption( 'Laser Snake' )
 		pygame.mouse.set_visible(0)
 
-	def update_screen(self):
+	key_handler = {
+		K_UP: Point(0, -1),
+		K_DOWN: Point(0, 1),
+		K_LEFT: Point(-1, 0),
+		K_RIGHT: Point(1, 0)
+	}
+
+	def updateScreen(self):
 		while True:
 			self.clock.tick(fps)
 			self.s.fill(WHITE)
 			self.screen.update()
-			pygame.draw.aalines(self.s, RED, False, self.snake.points, 15)
-			self.snake.updateSnake()
+			self.snake.updateSnake(speed)
 			
+			for food in self.snake.food.foods:
+				pygame.draw.circle(self.s, GREEN, toList(food[0]), food[1], 0)				
+			pygame.draw.aalines(self.s, BLUE, False, map( toList, self.snake.points ), 15)
+
 			for event in pygame.event.get():
 				if event.type == QUIT:
 					sys.exit(0)
-				elif event.type == KEYDOWN:					
-					if event.key == K_UP:
-						self.snake.updateDirection([0, -1])
-													
-					elif event.key == K_DOWN:
-						self.snake.updateDirection([0, 1])
-							
-					elif event.key == K_LEFT:
-						self.snake.updateDirection([-1, 0])
-
-					elif event.key == K_RIGHT:
-						self.snake.updateDirection([1, 0])
-						
-					elif event.key == K_ESCAPE:sys.exit(0)
+				if event.type == KEYDOWN:					
+					if event.key in self.key_handler:
+						self.snake.updateDirection( self.key_handler[event.key] )
+					elif event.key == K_ESCAPE:
+						sys.exit(0)
 			pygame.display.flip()
-
-	def game_end(self):
-		pass
-	def game_running(self):
-		pass
 
 def main():
 	w_obj = window()
-	w_obj.update_screen()
+	w_obj.updateScreen()
               
 if __name__ == "__main__":
     main()
