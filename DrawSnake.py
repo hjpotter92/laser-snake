@@ -14,6 +14,7 @@ SIZE = (1024, 576)
 
 head = [200, 50]
 tail = [50, 50]
+fps = 60
 
 class window:
 	corners = list()
@@ -38,7 +39,7 @@ class window:
 
 	def update_screen(self):
 		while True:
-			self.clock.tick(30)
+			self.clock.tick(fps)
 			self.s.fill(WHITE)
 			self.screen.update()
 			pygame.draw.aalines(self.s, RED, False, self.snake.points, 15)
@@ -47,22 +48,18 @@ class window:
 			for event in pygame.event.get():
 				if event.type == QUIT:
 					sys.exit(0)
-				elif event.type == KEYDOWN:
+				elif event.type == KEYDOWN:					
 					if event.key == K_UP:
-						if self.snake.head_direction != [0, 1] and self.snake.head_direction != [0, -1]:
-							self.snake.head_direction = [0, -1]
-							
+						self.snake.updateDirection([0, -1])
+													
 					elif event.key == K_DOWN:
-						if self.snake.head_direction != [0, -1] and self.snake.head_direction != [0, 1]:
-							self.snake.head_direction = [0, 1]
+						self.snake.updateDirection([0, 1])
 							
 					elif event.key == K_LEFT:
-						if self.snake.head_direction != [-1, 0] and self.snake.head_direction != [1, 0]:
-							self.snake.head_direction = [-1, 0]
+						self.snake.updateDirection([-1, 0])
 
 					elif event.key == K_RIGHT:
-						if self.snake.head_direction != [1, 0] and self.snake.head_direction != [-1, 0]:
-							self.snake.head_direction = [1, 0]
+						self.snake.updateDirection([1, 0])
 						
 					elif event.key == K_ESCAPE:sys.exit(0)
 			pygame.display.flip()

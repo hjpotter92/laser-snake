@@ -32,7 +32,7 @@ class Snake:
 		if p1[0] != p2[0] and p1[1] != p2[1]:
 			print "direction error: ", self.points[0], self.points[1]
 		s = self.slope(p1, p2)
-		return [int(s[0]), int(s[1])]
+		return [int(round(s[0])),int(round(s[1]))]
 
 	def updateDirection( self, direction ):
 		if self.dotProduct( direction, self.head_direction ) == 0:
@@ -49,10 +49,11 @@ class Snake:
 		else:
 			self.points[-1] = new_head
 			
+		self.points[0] = new_tail
 		if self.points[0] == self.points[1]:
 			self.points = self.points[1:]
-		else:
-			self.points[0] = new_tail
+
+		
 			
 
 
