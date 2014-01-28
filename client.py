@@ -1,4 +1,6 @@
-import socket, cPickle as pickle
+#!/usr/bin/env python
+
+import socket, json
 from player import Player
 
 class Client:
@@ -6,9 +8,63 @@ class Client:
 		self.player = Player( name )
 		self.socket = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 		self.server = ( ip, port )
+		self.packet_size = 1024
+ 
+	def sendJoinRequest( self ):
+		join_header = {
+			'cmd': 'JOIN',
+			'info': {
+				'name': self.player.getNick()
+			}
+		}
+		self.socket.sendto( json.dumps(join_header), self.server )
+		data_receive = self.socket.recv( self.packet_size )
+		reply = json.loads( data_receive )
+		self.player.setPlayerId( reply['id'] )
 
-	def sendName( self ):
-		self.socket.sendto( pickle.dumps(self.player), self.server )
+	def sendReadyRequest( self ):
+		ready_header = {
+			'cmd': 'READY',
+			'info': {}
+		}
+		self.socket.sendto( json.dumps(ready_header), self.server )
+		data_receieve = self.socket.recv( self.packet_size )
+		reply = json.loads( data_receive )
+		print reply
+
+	def sendStartRequest( self ):
+		start_game_header = {
+			'cmd': 'START',
+			'info': {}
+		}
+		self.socket.sendto( json.dumps(ready_header), self.server )
+		data_receieve = self.socket.recv( self.packet_size )
+		reply = json.loads( data_receive )
+		print reply
+
+	def sendQuitRequest( self ):
+		quit_header = {
+			'cmd': 'QUIT',
+			'info': {}
+		}
+		self.socket.sendto( json.dumps(ready_header), self.server )
+		data_receieve = self.socket.recv( self.packet_size )
+		reply = json.loads( data_receive )
+		print reply
+
+	def sendSnakeDataRequest( self ):
+		snake_header = {
+			'cmd': 'SNAKEDATA',
+			'info': self.constructor
+		}
+		self.socket.sendto( json.dumps(ready_header), self.server )
+		data_receieve = self.socket.recv( self.packet_size )
+		reply = json.loads( data_receive )
+		print reply
+
+	def receiveCountDownRequest( self ):
+		data_receive = self.socket.recv( self.packet_size )
+		
 
 	def receiveData( self ):
 		while True:
@@ -20,5 +76,8 @@ if __name__ == "__main__":
 	ip = raw_input( "Enter server address: " )
 	port = raw_input( "Enter server port: " )
 	cl = Client( name, ip, int(port) )
-	cl.sendName()
-	cl.receiveData()
+	cl.sendJoinRequest()
+	choice = raw_input ( "Are you ready? (yes/no) ")
+	if 'yes' in choice.lower():
+		cl.sendReadyRequest()
+	cl.receiveCountDown()
