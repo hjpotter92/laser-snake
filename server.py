@@ -12,12 +12,16 @@ class Server:
 		print "Established connection on {} over {}".format( host, port )
 		self.players = {}
 
+	def sendData( self ):
+		for address in self.players:
+			self.socket.sendto( json.dumps(reply), address )
+
 	def receiveJoinRequest( self, request, address ):
 		self.players[address] = {
 			'id': len(self.players) + 1,
 			'name': request['info']['name'],
 			'ready': False,
-			'playing' : True
+			'playing' : False
 		}
 		reply = self.players[address]
 		self.socket.sendto( json.dumps(reply), address )
@@ -28,20 +32,17 @@ class Server:
 
 	def receiveStartRequest( self, request, address ):
 		if address in self.players and self.players[address]['id'] == 1:
-			self.startCountDown()
+			time.sleep(10)
+			self.sendData()			
 		else:
 			reply = 'Only the player who joined first can start the game.'
 			self.socket.sendto( json.dumps(reply), address )
 			
 	def receiveSnakeDataReuqest( self, request, address ):
 		self.players[address][snake] = request['info']
-		for address in self.players:
-			self.socket.sendto( json.dumps(self.players[address]), address )
 
 	def receiveQuitRequest( self, request, address ):
 		self.players[address]['playing'] = False
-		for address in self.players:
-			self.socket.sendto( json.dumps(self.players[address]), address )			
 				
 	handler = {
 		'JOIN': receiveJoinRequest,
@@ -60,7 +61,7 @@ class Server:
 			except socket.error:
 				pass
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	ip = raw_input( "Please enter the server IP address (this is shared with clients to connect): " )
 	port = raw_input( "Please enter the port to start server (leave blank for default): " )
 	if len( ip ) == 0 or len( port ) == 0:
