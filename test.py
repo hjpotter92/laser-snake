@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-import sys
-import pygame
-import Snake
-from Point import *
+import sys, pygame
+from snake import Snake
+from point import *
 from pygame.locals import *
-
-
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -24,18 +21,18 @@ food_radius = 5
 
 class window:
 	corners = list()
-	def __init__(self, snake = Snake.Snake()):
+	def __init__( self, snake = Snake() ):
 		self.snake = snake
 		self.clock = pygame.time.Clock()
+		self.font = pygame.font
+		self.screen = pygame.display
+		self.sound = pygame.mixer
 		if not self.clock:
 			print 'warning! clock disabled'
-		self.font = pygame.font
 		if not self.font:
 			print 'warning! fonts disabled'
-		self.screen = pygame.display
 		if not self.screen:
 			print 'warning! screen disabled'
-		self.sound = pygame.mixer
 		if not self.sound:
 			print 'warning! sound disabled'
 		pygame.init()
@@ -56,9 +53,9 @@ class window:
 			self.screen.update()
 			for i in xrange( speed ):
 				self.snake.updateSnake()
-			for food in self.snake.food.foods:
-				pygame.draw.circle(self.s, GREEN, toList(food[0]), food[1], 0)
-			pygame.draw.aalines(self.s, BLUE, False, map( toList, self.snake.points ), 15)
+			for food in self.snake.getFood():
+				pygame.draw.circle(self.s, GREEN, food[0].toList(), food[1], 0)
+			pygame.draw.aalines(self.s, BLUE, False, [ o.toList() for o in self.snake.points ], 15)
 
 			for event in pygame.event.get():
 				if event.type == QUIT:

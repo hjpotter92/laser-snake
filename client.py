@@ -64,10 +64,13 @@ class Client:
 
 	def receiveCountDownRequest( self ):
 		data_receive = self.socket.recv( self.packet_size )
-		
+
+	def sendName( self ):
+		self.socket.sendto( self.player.dumpJSON(), self.server )
 
 	def receiveData( self ):
 		while True:
+			print "Waiting!"
 			rcvd = self.socket.recv( 1024 )
 			print rcvd
 

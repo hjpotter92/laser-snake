@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from Point import *
-from Food import Food
+from point import Point
+from food import Food
 
 class Snake:
 	def __init__ ( self, food = Food(), board_size = (1024, 576), points = [Point(50, 50), Point(200, 50)], head_direction = Point(1, 0), meta = {} ):
@@ -9,6 +9,9 @@ class Snake:
 		self.points = points
 		self.meta = meta
 		self.food = food
+
+	def getFood( self ):
+		return self.food.getFood()
 
 	def getHead ( self ):
 		return self.points[-1]

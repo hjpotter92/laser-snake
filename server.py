@@ -67,6 +67,6 @@ if __name__ == '__main__':
 	if len( ip ) == 0 or len( port ) == 0:
 		with open( 'config/server.json') as config:
 			server_configuration = json.load( config )
-			ip, port = server_configuration['ip'], int( server_configuration['port'] )
+			ip, port = ip or server_configuration['ip'], int( port or server_configuration['port'] )
 	srvr = Server( ip, int(port) )
 	srvr.receive()
