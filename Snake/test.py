@@ -15,8 +15,8 @@ SIZE = (1024, 576)
 
 head = [200, 50]
 tail = [50, 50]
-fps = 50
-speed = 3
+fps = 30
+speed = 5
 food_radius = 5
 
 class window:
@@ -54,8 +54,9 @@ class window:
 			for i in xrange( speed ): self.snake.updateSnake()
 			for food in self.snake.getFood():
 				pygame.draw.circle(self.s, GREEN, food[0].toList(), food[1], 0)
-			pygame.draw.aalines(self.s, BLUE, False, [ o.toList() for o in self.snake.points ], 15)
-			pygame.draw.aalines(self.s, RED, self.snake.points[-1].toList(), 5, 0)
+			sections = self.snake.sections()
+			for s in sections: pygame.draw.aalines(self.s, BLUE, False, [ o.toList() for o in s ], 15)
+			pygame.draw.circle(self.s, RED, self.snake.points[-1].toList(), 5, 0)
 
 			for event in pygame.event.get():
 				if event.type == QUIT:
