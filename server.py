@@ -10,12 +10,15 @@ class server:
 		self.clients = {}
 
 	def run( self ):
-		while True:
-			try:
-				data, addr = self.listener.recvfrom( 1024 )
+		try:
+			while True:
+				# r, w, x = select.select( self.reading, self.writing, [], 2 )
+				data, addr = self.listener.recvfrom( 32 )
 				print data
-			except socket.error, e:
-				print e
+				if addr not in self.clients:
+					self.clients[addr] = data
+		except socket.error, e:
+			print e
 
 if __name__ == "__main__":
 	s = server( 'localhost', 1992 )
