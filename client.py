@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import socket, json
 from player import Player
 
@@ -9,7 +7,7 @@ class Client:
 		self.socket = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 		self.server = ( ip, port )
 		self.packet_size = 1024
- 
+
 	def sendJoinRequest( self ):
 		join_header = {
 			'cmd': 'JOIN',

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import socket, json
 from player import Player
 
@@ -14,6 +12,7 @@ class Server:
 
 	def sendData( self ):
 		for address in self.players:
+			self.players[address]['playing'] = True
 			self.socket.sendto( json.dumps(reply), address )
 
 	def receiveJoinRequest( self, request, address ):
@@ -25,25 +24,36 @@ class Server:
 		}
 		reply = self.players[address]
 		self.socket.sendto( json.dumps(reply), address )
-		
+
 	def receiveReadyRequest( self, request, address ):
 		self.players[address]['ready'] = True
 		print self.players[address]['name']+ ' is ' + ' READY'
 
 	def receiveStartRequest( self, request, address ):
+ 		for loop_address in self.players:
+ 			if not self.players[loop_address]['ready']:
+ 				reply = {
+ 					'response': 'ERROR',
+ 					'info': 'All the players are not yet ready to play.'
+ 				}
+ 				self.socket.sendto( json.dumps(reply), address )
+ 				return False
 		if address in self.players and self.players[address]['id'] == 1:
 			time.sleep(10)
-			self.sendData()			
+			self.sendData()
 		else:
-			reply = 'Only the player who joined first can start the game.'
+			reply = {
+				'response': 'ERROR',
+				'info': 'Only the player who joined first can start the game.'
+			}
 			self.socket.sendto( json.dumps(reply), address )
-			
+
 	def receiveSnakeDataReuqest( self, request, address ):
 		self.players[address][snake] = request['info']
 
 	def receiveQuitRequest( self, request, address ):
 		self.players[address]['playing'] = False
-				
+
 	handler = {
 		'JOIN': receiveJoinRequest,
 		'READY': receiveReadyRequest,
@@ -51,13 +61,17 @@ class Server:
 		'SNAKEDATA': receiveSnakeDataReuqest,
 		'QUIT': receiveQuitRequest
 	}
-	
+
 	def receive( self ):
 		while True:
 			try:
 				receive_data, address = self.socket.recvfrom( 1024 )
 				request = json.loads( receive_data )
-				self.handler[request['cmd']]( self, request, address )
+				if request['cmd'] in self.handler:
+					print '{} comamnd received from {}'.format( request['cmd'], address[0] )
+					self.handler[ request['cmd'] ]( self, request, address )
+				else:
+					print request['cmd']
 			except socket.error:
 				pass
 

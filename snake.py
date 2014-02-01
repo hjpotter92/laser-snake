@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from point import Point
 from food import Food
 

@@ -68,9 +68,6 @@ class window:
 						sys.exit(0)
 			pygame.display.flip()
 
-def main():
+if __name__ == "__main__":
 	w_obj = window()
 	w_obj.updateScreen()
-
-if __name__ == "__main__":
-    main()
