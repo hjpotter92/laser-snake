@@ -1,12 +1,14 @@
-import socket, json
+import socket
 from player import Player
+from connection import send, receive
 
 class Client:
+	packet_size = 1024
+
 	def __init__( self, name, ip, port ):
 		self.player = Player( name )
-		self.socket = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
+		self.connection = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 		self.server = ( ip, port )
-		self.packet_size = 1024
 
 	def sendJoinRequest( self ):
 		join_header = {
@@ -15,62 +17,65 @@ class Client:
 				'name': self.player.getNick()
 			}
 		}
-		self.socket.sendto( json.dumps(join_header), self.server )
-		data_receive = self.socket.recv( self.packet_size )
-		reply = json.loads( data_receive )
+		send( self.connection, join_header, self.server )
+		reply = receive( self.connection )
 		self.player.setPlayerId( reply['id'] )
 
 	def sendReadyRequest( self ):
 		ready_header = {
 			'cmd': 'READY',
-			'info': {}
+			'info': {
+				'player_id': self.player.getPlayerId()
+			}
 		}
-		self.socket.sendto( json.dumps(ready_header), self.server )
-		data_receieve = self.socket.recv( self.packet_size )
-		reply = json.loads( data_receive )
+		send( self.connection, ready_header, self.server )
+		reply = receive( self.connection )
 		print reply
 
 	def sendStartRequest( self ):
 		start_game_header = {
 			'cmd': 'START',
-			'info': {}
+			'info': {
+				'player_id': self.player.getPlayerId()
+			}
 		}
-		self.socket.sendto( json.dumps(ready_header), self.server )
-		data_receieve = self.socket.recv( self.packet_size )
-		reply = json.loads( data_receive )
+		send( self.connection, start_game_header, self.server )
+		reply = receive( self.connection )
 		print reply
 
 	def sendQuitRequest( self ):
 		quit_header = {
 			'cmd': 'QUIT',
-			'info': {}
+			'info': {
+				'player_id': self.player.getPlayerId()
+			}
 		}
-		self.socket.sendto( json.dumps(ready_header), self.server )
-		data_receieve = self.socket.recv( self.packet_size )
-		reply = json.loads( data_receive )
+		send( self.connection, quit_header, self.server )
+		reply = receive( self.connection )
 		print reply
 
 	def sendSnakeDataRequest( self ):
 		snake_header = {
 			'cmd': 'SNAKEDATA',
-			'info': self.constructor
+			'info': {
+				'player_id': self.player.getPlayerId(),
+				'data': self.constructor
+			}
 		}
-		self.socket.sendto( json.dumps(ready_header), self.server )
-		data_receieve = self.socket.recv( self.packet_size )
-		reply = json.loads( data_receive )
+		send( self.connection, snake_header, self.server )
+		reply = receive( self.connection )
 		print reply
 
 	def receiveCountDownRequest( self ):
-		data_receive = self.socket.recv( self.packet_size )
+		data_receive = receive( self.connection, self.packet_size )
 
 	def sendName( self ):
-		self.socket.sendto( self.player.dumpJSON(), self.server )
+		send( self.connection, self.player.getNick(), self.server )
 
 	def receiveData( self ):
 		while True:
-			print "Waiting!"
-			rcvd = self.socket.recv( 1024 )
-			print rcvd
+			data_receive = receive( self.connection, self.packet_size )
+			print data_receive
 
 if __name__ == "__main__":
 	name = raw_input( "Please enter your nickname: " )
