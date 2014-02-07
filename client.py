@@ -18,8 +18,8 @@ class Client:
 			}
 		}
 		send( self.connection, join_header, self.server )
-		reply = receive( self.connection )
-		self.player.setPlayerId( reply['id'] )
+		reply = receive( self.connection, self.packet_size )
+		self.player.setPlayerId( reply['self']['id'] )
 
 	def sendReadyRequest( self ):
 		ready_header = {
@@ -29,7 +29,7 @@ class Client:
 			}
 		}
 		send( self.connection, ready_header, self.server )
-		reply = receive( self.connection )
+		reply = receive( self.connection, self.packet_size )
 		print reply
 
 	def sendStartRequest( self ):
@@ -40,7 +40,7 @@ class Client:
 			}
 		}
 		send( self.connection, start_game_header, self.server )
-		reply = receive( self.connection )
+		reply = receive( self.connection, self.packet_size )
 		print reply
 
 	def sendQuitRequest( self ):
@@ -51,7 +51,7 @@ class Client:
 			}
 		}
 		send( self.connection, quit_header, self.server )
-		reply = receive( self.connection )
+		reply = receive( self.connection, self.packet_size )
 		print reply
 
 	def sendSnakeDataRequest( self ):
@@ -63,7 +63,7 @@ class Client:
 			}
 		}
 		send( self.connection, snake_header, self.server )
-		reply = receive( self.connection )
+		reply = receive( self.connection, self.packet_size )
 		print reply
 
 	def receiveCountDownRequest( self ):

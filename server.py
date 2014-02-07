@@ -22,8 +22,14 @@ class Server:
 			'ready': False,
 			'playing' : False
 		}
-		reply = self.players[address]
+		reply = {
+			'self': {
+				'id': self.players[address]['id']
+			},
+			'other_players': ""
+		}
 		send( self.listener, reply, address )
+		self.players[address]['player'] = Player( self.players[address]['name'], self.players[address]['id'] )
 
 	def receiveReadyRequest( self, request, address ):
 		self.players[address]['ready'] = True
@@ -81,5 +87,5 @@ if __name__ == '__main__':
 		with open( 'config/server.json') as config:
 			server_configuration = json.load( config )
 			ip, port = ip or server_configuration['ip'], int( port or server_configuration['port'] )
-	srvr = Server( ip, int(port) )
-	srvr.receive()
+	serve = Server( ip, int(port) )
+	serve.receive()

@@ -1,6 +1,5 @@
-import pygame, pygame.font, pygame.event, pygame.draw, string
+import pygame, pygame.font, pygame.event, pygame.draw, string, sys
 from pygame.locals import *
-import sys
 
 def get_key():
 	while 1:
