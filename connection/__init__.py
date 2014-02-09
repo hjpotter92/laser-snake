@@ -2,6 +2,7 @@ import json
 
 def send( channel, message, address ):
 	try:
+		print channel, message, address
 		channel.sendto( json.dumps(message), address )
 		return True
 	except OSError as e:

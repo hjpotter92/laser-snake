@@ -2,4 +2,6 @@
 	"screenH": 576,
 	"screenW": 1024,
 	"version": "0.1.0.0",
+	"ip": "localhost",
+	"port": 1992
 }

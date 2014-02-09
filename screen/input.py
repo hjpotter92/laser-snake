@@ -3,12 +3,13 @@ from pygame import font as pyfont, event as pyevent, display as pydisplay
 from sys import exit
 
 class Box:
-	allowed_keys = range( K_0, K_9 + 1 ) + range( K_KP0, K_KP9 + 1 ) + [ K_PERIOD, K_KP_PERIOD ]
-	def __init__( self, screen, message, position, background = (255, 255, 255), text = (255, 0, 0) ):
+	def __init__( self, screen, message, position, allowed_keys = [], background = (255, 255, 255), text = (255, 0, 0) ):
 		pyfont.init()
 		self.screen = screen
 		self.message = message
 		self.position = position
+		if allowed_keys:
+			self.allowed_keys = allowed_keys
 		self.colours = {
 			'screen': background,
 			'text': text
