@@ -2,7 +2,7 @@ from point import Point
 from food import Food
 
 class Snake:
-	def __init__ ( self, food = Food(), board_size = Point(1024, 576), points = [Point(50, 50), Point(200, 50)], head_direction = Point(1, 0), meta = {} ):
+	def __init__ ( self, board_size = Point(1024, 576), points = [Point(50, 50), Point(200, 50)], head_direction = Point(1, 0), food = Food(), meta = {} ):
 		self.head_direction = head_direction
 		self.points = points
 		self.meta = meta
@@ -12,16 +12,16 @@ class Snake:
 	def getFood( self ):
 		return self.food.getFood()
 
-	def getHead ( self ):
+	def getHead( self ):
 		return self.points[-1]
 
-	def getTail ( self ):
+	def getTail( self ):
 		return self.points[0]
 
-	def setHead ( self, p ):
+	def setHead( self, p ):
 		self.points[-1] = p
 
-	def setTail ( self, p ):
+	def setTail( self, p ):
 		self.points[0] = p
 
 	def getDirection( self, p1, p2 ):
@@ -39,7 +39,7 @@ class Snake:
 		else: self.setHead(new_head)
 		if self.isPseudo(new_head): self.points += self.correspondingPseudo(new_head)
 
-	def updateTail ( self ):
+	def updateTail( self ):
 		tail_direction = self.getDirection (self.getTail(), self.points[1])
 		new_tail = self.getTail() + tail_direction
 		if new_tail == self.points[1]:
@@ -49,19 +49,25 @@ class Snake:
 			self.points = self.points[1:]
 
 	def isPseudo( self, p ):
-		if p.y == -1 or p.x == -1 or p.x == self.board_size.x or p.y == self.board_size.y: return True
-		else: return False
+		if p.y in [-1, self.board_size.y] or p.x in [-1, self.board_size.x]:
+			return True
+		else:
+			return False
 
 	def correspondingPseudo( self, p ):
-		if p.y == -1: return [Point(p.x, self.board_size.y), Point(p.x, self.board_size.y - 1)]
-		if p.x == -1: return [Point(self.board_size.x, p.y), Point(self.board_size.x -1, p.y)]
-		if p.y == self.board_size.y: return [Point(p.x, -1), Point(p.x, 0)]
-		if p.x == self.board_size.x: return [Point(-1, p.y), Point(0, p.y)]
+		if p.y == -1:
+			return [Point(p.x, self.board_size.y), Point(p.x, self.board_size.y - 1)]
+		if p.x == -1:
+			return [Point(self.board_size.x, p.y), Point(self.board_size.x -1, p.y)]
+		if p.x == self.board_size.x:
+		 return [Point(-1, p.y), Point(0, p.y)]
+		if p.y == self.board_size.y:
+		 return [Point(p.x, -1), Point(p.x, 0)]
 
 	def sections( self ):
 		secs = []
 		i = 0
-		l = len(self.points)
+		l = len( self.points )
 		while i < l:
 			s = [self.points[i]]
 			i = i + 1

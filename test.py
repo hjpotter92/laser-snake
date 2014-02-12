@@ -27,6 +27,11 @@ class window:
 		self.font = pygame.font
 		self.screen = pygame.display
 		self.sound = pygame.mixer
+		self.others = [
+			Snake(Point(1024, 576), [Point(300, 30), Point(150, 30)], Point(-1, 0) ),
+			Snake(Point(1024, 576), [Point(300, 130), Point(300, 280)], Point(0, 1) ),
+			Snake(Point(1024, 576), [Point(500, 250), Point(500, 100)], Point(0, -1) )
+		]
 		if not self.clock:
 			print 'warning! clock disabled'
 		if not self.font:
@@ -51,12 +56,19 @@ class window:
 			self.clock.tick(fps)
 			self.s.fill(WHITE)
 			self.screen.update()
-			for i in xrange( speed ): self.snake.updateSnake()
+			for i in xrange( speed ):
+				self.snake.updateSnake()
+				for snakes in self.others:
+					snakes.updateSnake()
 			for food in self.snake.getFood():
 				pygame.draw.circle(self.s, GREEN, food[0].toList(), food[1], 0)
-			sections = self.snake.sections()
-			for s in sections: pygame.draw.aalines(self.s, BLUE, False, [ o.toList() for o in s ], 15)
+			for section in self.snake.sections():
+				pygame.draw.aalines(self.s, BLUE, False, [ o.toList() for o in section ], 15)
 			pygame.draw.circle(self.s, RED, self.snake.points[-1].toList(), 5, 0)
+			for snakes in self.others:
+				for section in snakes.sections():
+					pygame.draw.aalines(self.s, BLUE, False, [ o.toList() for o in section ], 15)
+				pygame.draw.circle(self.s, RED, snakes.points[-1].toList(), 5, 0)
 
 			for event in pygame.event.get():
 				if event.type == QUIT:

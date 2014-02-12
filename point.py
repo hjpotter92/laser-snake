@@ -32,7 +32,7 @@ class Point:
 	def __eq__( self, other ):
 		return ( self.x == other.x ) and ( self.y == other.y )
 
-	def slope ( self, other ):
+	def slope( self, other ):
 		return ( other - self ) / abs( other - self )
 
 	def toList( self ):
