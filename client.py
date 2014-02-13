@@ -1,6 +1,11 @@
 import socket
+from pygame.locals import *
+from pygame import font as pyfont, event as pyevent, display as pydisplay
+from sys import exit
 from player import Player
 from connection import send, receive
+from screen.input import Box
+from config import game as game_configuration
 
 class Client:
 	packet_size = 1024
@@ -18,7 +23,7 @@ class Client:
 			}
 		}
 		send( self.connection, join_header, self.server )
-		reply = receive( self.connection, self.packet_size )
+		reply, address = receive( self.connection, self.packet_size )
 		self.player.setPlayerId( reply['self']['id'] )
 
 	def sendReadyRequest( self ):
@@ -29,7 +34,7 @@ class Client:
 			}
 		}
 		send( self.connection, ready_header, self.server )
-		reply = receive( self.connection, self.packet_size )
+		reply, address = receive( self.connection, self.packet_size )
 		print reply
 
 	def sendStartRequest( self ):
@@ -40,7 +45,7 @@ class Client:
 			}
 		}
 		send( self.connection, start_game_header, self.server )
-		reply = receive( self.connection, self.packet_size )
+		reply, address = receive( self.connection, self.packet_size )
 		print reply
 
 	def sendQuitRequest( self ):
@@ -51,7 +56,7 @@ class Client:
 			}
 		}
 		send( self.connection, quit_header, self.server )
-		reply = receive( self.connection, self.packet_size )
+		reply, address = receive( self.connection, self.packet_size )
 		print reply
 
 	def sendSnakeDataRequest( self ):
@@ -63,7 +68,7 @@ class Client:
 			}
 		}
 		send( self.connection, snake_header, self.server )
-		reply = receive( self.connection, self.packet_size )
+		reply, address = receive( self.connection, self.packet_size )
 		print reply
 
 	def receiveCountDownRequest( self ):
@@ -78,12 +83,25 @@ class Client:
 			print data_receive
 
 if __name__ == "__main__":
-	name = raw_input( "Please enter your nickname: " )
-	ip = raw_input( "Enter server address: " )
-	port = raw_input( "Enter server port: " )
-	cl = Client( name, ip, int(port) )
-	cl.sendJoinRequest()
-	choice = raw_input ( "Are you ready? (yes/no) ")
+	screen_size = ( game_configuration['screenW'], game_configuration['screenH'] )
+	screen = pydisplay.set_mode( screen_size )
+	pydisplay.set_caption( "Laser-Snake: " + game_configuration['version'] )
+	pyevent.set_allowed( None )
+	pyevent.set_allowed( [QUIT, KEYDOWN] )
+	nick_keys, port_keys = range( K_LEFTPAREN, K_z + 1 ) + range( K_KP0, K_KP_PLUS + 1 ) + [ K_KP_EQUALS ], range( K_0, K_9 + 1 ) + range( K_KP0, K_KP9 + 1 )
+	ip_keys = port_keys + [ K_PERIOD, K_KP_PERIOD ]
+	nick_box = Box( screen, "Enter your nickname: ", (150, 100), nick_keys )
+	ip_box = Box( screen, "Enter server IP: ", (150, 100), ip_keys )
+	port_box = Box( screen, "Enter server port: ", (150, 100), port_keys )
+	name = nick_box.run()
+	ip = ip_box.run()
+	port = port_box.run()
+	if len( ip ) == 0 or len( port ) == 0:
+		ip, port = ip or game_configuration['ip'], port or game_configuration['port']
+	client = Client( name, ip, int(port) )
+	client.sendJoinRequest()
+	choice_box = Box( screen, "Are you ready? (yes/no) ", (150, 100), nick_keys )
+	choice = choice_box.run()
 	if 'yes' in choice.lower():
-		cl.sendReadyRequest()
-	cl.receiveCountDown()
+		client.sendReadyRequest()
+	client.receiveCountDown()

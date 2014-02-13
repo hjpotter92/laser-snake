@@ -1,6 +1,10 @@
 import socket
+from pygame.locals import *
+from pygame import font as pyfont, event as pyevent, display as pydisplay
 from player import Player
 from connection import send, receive
+from screen.input import Box
+from config import server as server_configuration
 
 class Server:
 	def __init__( self, host, port ):
@@ -71,7 +75,7 @@ class Server:
 	def receive( self ):
 		while True:
 			try:
-				receive_data, address = receive( self.listener )
+				request, address = receive( self.listener )
 				if request['cmd'] in self.handler:
 					print '{} comamnd received from {}'.format( request['cmd'], address[0] )
 					self.handler[ request['cmd'] ]( self, request, address )
@@ -81,11 +85,17 @@ class Server:
 				pass
 
 if __name__ == '__main__':
-	ip = raw_input( "Please enter the server IP address (this is shared with clients to connect): " )
-	port = raw_input( "Please enter the port to start server (leave blank for default): " )
+	screen = pydisplay.set_mode( (1024, 576) )
+	pydisplay.set_caption( "Laser-Snake server: " + server_configuration['version'] )
+	pyevent.set_allowed( None )
+	pyevent.set_allowed( [QUIT, KEYDOWN] )
+	port_keys = range( K_0, K_9 + 1 ) + range( K_KP0, K_KP9 + 1 )
+	ip_keys = port_keys + [ K_PERIOD, K_KP_PERIOD ]
+	ip_box = Box( screen, "Please enter the server IP address: ", (10, 100), ip_keys )
+	port_box = Box( screen, "Please enter the port to start server (leave blank for default): ", (10, 100), port_keys )
+	ip = ip_box.run()
+	port = port_box.run()
 	if len( ip ) == 0 or len( port ) == 0:
-		with open( 'config/server.json') as config:
-			server_configuration = json.load( config )
-			ip, port = ip or server_configuration['ip'], int( port or server_configuration['port'] )
+		ip, port = ip or server_configuration['ip'], int( port or server_configuration['port'] )
 	serve = Server( ip, int(port) )
 	serve.receive()
