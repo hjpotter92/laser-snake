@@ -30,7 +30,9 @@ class Snake:
         return self.segments[0]
 
     def extend(self, segment=None):
-        self.segments.appendleft((segment or self.head()) + self.get_direction())
+        self.segments.appendleft(
+            (segment or self.head()) + self.get_direction()
+        )
 
     def suicide(self):
         return self.segments.count(self.head()) > 1

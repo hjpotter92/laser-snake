@@ -31,7 +31,7 @@ class Game:
 
     def __init__(self):
         self.block_size = BLOCK_SIZE
-        self.window = pygame.display.set_mode(GAME_WINDOW) #, pygame.FULLSCREEN)
+        self.window = pygame.display.set_mode(GAME_WINDOW)
         self.screen = pygame.Surface(WORLD_SIZE * BLOCK_SIZE)
         self.clock = pygame.time.Clock()
         self.world = pygame.Rect((0, 0), WORLD_SIZE)
