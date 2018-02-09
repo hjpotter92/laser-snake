@@ -1,10 +1,12 @@
-from random import choice
+from math import log10
+from random import choice, randint
 
 import pygame
 
 from pygame.locals import *
 
 from enums import Colours, Direction
+from food import Food
 from snake import Snake
 from vector import Vector, random_vector
 
@@ -27,6 +29,10 @@ KEY_DIRECTION = {
 
 
 class Game:
+    """
+    The layer for handling the main game window and its individual elements.
+
+    """
     title = "Laser Snake"
 
     def __init__(self):
@@ -35,6 +41,11 @@ class Game:
         self.screen = pygame.Surface(WORLD_SIZE * BLOCK_SIZE)
         self.clock = pygame.time.Clock()
         self.world = pygame.Rect((0, 0), WORLD_SIZE)
+        self.boundary = (
+            self.world.topleft,
+            self.world.bottomright - Direction.BOTTOM_RIGHT.value
+        )
+        self.food = set()
         pygame.display.set_caption(self.title)
         pygame.mouse.set_visible(False)
         self.reset()
@@ -42,13 +53,23 @@ class Game:
     def reset(self):
         self.running = True
         self.next_direction = Direction.RANDOM()
-        starting = random_vector(self.world.topleft, self.world.bottomright)
+        starting = random_vector(*self.boundary)
         self.snake = Snake(
             starting,
             self.next_direction.value,
             length=5,
             color=Colours.RANDOM()
         )
+        self.generate_food()
+
+    def generate_food(self):
+        position = random_vector(
+            *self.boundary,
+            exceptions=self.snake
+        )
+        rand = randint(1, 9999)
+        score = int(3 / log10(rand)) + 1
+        self.food.add(Food(position, score, Colours.RANDOM()))
 
     def check_exit(self, event):
         """Check if the user exited"""
@@ -72,10 +93,16 @@ class Game:
 
     def update(self, δt):
         self.snake.update(δt, self.next_direction.value)
+        head = self.snake.head()
+        for food in self.food:
+            if food.get_position() == head:
+                self.food.remove(food)
+                self.snake.grow(food.get_score())
+                self.generate_food()
         if self.snake.suicide():
             self.running = False
-        if not self.world.collidepoint(self.snake.head()):
-            self.snake.loop(self.world.topleft, self.world.bottomright)
+        if not self.world.collidepoint(head):
+            self.snake.loop(*self.boundary)
 
     def render(self):
         # self.window.fill(Colours.BACKGROUND.value)
@@ -85,6 +112,12 @@ class Game:
                 self.screen,
                 self.snake.get_color(),
                 self.block(segment)
+            )
+        for food in self.food:
+            pygame.draw.rect(
+                self.screen,
+                food.get_color(),
+                self.block(food.get_position())
             )
         self.window.blit(self.screen, self.window.get_rect(x=80, y=40))
 

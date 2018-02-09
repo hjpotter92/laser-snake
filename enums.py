@@ -28,6 +28,7 @@ class Direction(Enum):
     UP = Vector((0, -1))
     LEFT = Vector((-1, 0))
     DOWN = Vector((0, 1))
+    NULL = RIGHT + LEFT
     BOTTOM_RIGHT = RIGHT + DOWN
 
     @classmethod

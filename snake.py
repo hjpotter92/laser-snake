@@ -5,6 +5,7 @@ from vector import Vector
 
 SNAKE_MIN_SPEED = 8.0
 SNAKE_MIN_LENGTH = 5
+SNAKE_SPEED_MULTIPLIER = 0.20
 
 
 class Snake:
@@ -36,8 +37,9 @@ class Snake:
     def suicide(self):
         return self.segments.count(self.head()) > 1
 
-    def grow(self):
-        self.length += 1
+    def grow(self, value=1):
+        self.length += value
+        self.speed += SNAKE_SPEED_MULTIPLIER * value
 
     def loop(self, topleft, bottomright):
         head = self.head()
@@ -49,7 +51,8 @@ class Snake:
             new_vector = Vector((bottomright[0], head[1]))
         elif self.get_direction() == Direction.DOWN.value:
             new_vector = Vector((head[0], topleft[1]))
-        self.extend(new_vector)
+        print(new_vector, self.get_direction())
+        self.extend(new_vector - self.get_direction())
 
     def get_color(self):
         return self.color.value
@@ -71,5 +74,5 @@ class Snake:
         self.set_timer()
         self.set_direction(direction)
         self.extend()
-        if len(self) > self.length:
+        for _ in range(0, len(self) - self.length):
             self.segments.pop()
