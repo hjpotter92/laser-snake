@@ -6,13 +6,13 @@ from pygame.locals import *
 
 from enums import Colours, Direction
 from snake import Snake
-from vector import Vector
+from vector import Vector, random_vector
 
 GAME_FPS = 30
 GAME_WINDOW = GAME_WIDTH, GAME_HEIGHT = 1280, 720
 
-BLOCK_SIZE = 8
-WORLD_SIZE = Vector((60, 60))
+BLOCK_SIZE = 16
+WORLD_SIZE = Vector((30, 30))
 
 KEY_DIRECTION = {
     K_w: Direction.UP,
@@ -42,8 +42,9 @@ class Game:
     def reset(self):
         self.running = True
         self.next_direction = Direction.RANDOM()
+        starting = random_vector(self.world.topleft, self.world.bottomright)
         self.snake = Snake(
-            Vector(self.world.center) // 2,
+            starting,
             self.next_direction.value,
             length=5,
             color=Colours.RANDOM()

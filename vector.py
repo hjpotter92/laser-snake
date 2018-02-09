@@ -1,3 +1,6 @@
+from random import randint
+
+
 class Vector(tuple):
     def __add__(self, other):
         return Vector(v + w for v, w in zip(self, other))
@@ -22,3 +25,12 @@ class Vector(tuple):
 
     def __floordiv__(self, s):
         return Vector(v // s for v in self)
+
+
+def random_vector(topleft, bottomright, exceptions=None):
+    ranges = list(zip(topleft, bottomright))
+    exceptions = list(map(Vector, set(exceptions or [])))
+    point = Vector(tuple(randint(*x) for x in ranges))
+    while point in exceptions:
+        point = Vector(tuple(randint(*x) for x in ranges))
+    return point

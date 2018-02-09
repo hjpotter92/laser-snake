@@ -15,7 +15,6 @@ class Snake:
         self.segments = deque([start])
         self.color = color
         self.set_timer()
-        print(self.segments)
 
     def __str__(self):
         return f"({self.x}, {self.y})"
