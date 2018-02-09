@@ -17,9 +17,6 @@ class Snake:
         self.color = color
         self.set_timer()
 
-    def __str__(self):
-        return f"({self.x}, {self.y})"
-
     def __len__(self):
         return len(self.segments)
 
