@@ -27,6 +27,8 @@ class Snake:
         return self.segments[0]
 
     def extend(self, segment=None):
+        if self.get_direction() == Direction.NULL.value:
+            return
         self.segments.appendleft(
             (segment or self.head()) + self.get_direction()
         )
@@ -48,8 +50,13 @@ class Snake:
             new_vector = Vector((bottomright[0], head[1]))
         elif self.get_direction() == Direction.DOWN.value:
             new_vector = Vector((head[0], topleft[1]))
-        print(new_vector, self.get_direction())
         self.extend(new_vector - self.get_direction())
+
+    def get_score(self):
+        return self.length
+
+    def get_speed(self):
+        return self.speed
 
     def get_color(self):
         return self.color.value
