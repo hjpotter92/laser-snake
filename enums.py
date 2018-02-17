@@ -1,10 +1,11 @@
-from enum import Enum
+from enum import Enum, unique
 from random import choice
 
 from vector import Vector
 
 
-class Colours(Enum):
+@unique
+class Colors(Enum):
     BACKGROUND = (45, 45, 45)
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
@@ -22,6 +23,7 @@ class Colours(Enum):
         ])
 
 
+@unique
 class Direction(Enum):
     """docstring for Direction"""
     RIGHT = Vector((1, 0))

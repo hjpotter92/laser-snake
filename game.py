@@ -4,15 +4,16 @@ from random import choice, randint
 import pygame
 
 from pygame.locals import *
+from pygame.draw import ellipse as pyellipse, rect as pyrect, arc as pyarc
 
-from enums import Colours, Direction
+from enums import Colors, Direction
 from food import Food
 from snake import Snake
 from vector import Vector, random_vector
 
 GAME_FPS = 30
-GAME_WINDOW = GAME_WIDTH, GAME_HEIGHT = 0, 0
-GAME_FULLSCREEN = True
+GAME_WINDOW = GAME_WIDTH, GAME_HEIGHT = 1280, 720
+GAME_FULLSCREEN = False
 
 BLOCK_SIZE = 16
 WORLD_SIZE = Vector((30, 30))
@@ -29,7 +30,7 @@ KEY_DIRECTION = {
 }
 
 
-class Game:
+class SnakeGame:
     """
     The layer for handling the main game window and its individual elements.
 
@@ -61,9 +62,16 @@ class Game:
         self.snake = Snake(
             starting,
             self.next_direction.value,
-            length=5,
-            color=Colours.RANDOM()
+            color=Colors.BLUE
         )
+        self.snakes = [
+            Snake(
+                random_vector(*self.boundary),
+                Direction.RANDOM().value,
+                color=Colors.RED
+            )
+            for i in range(3)
+        ]
         self.foods = set()
         self.generate_food()
 
@@ -74,7 +82,7 @@ class Game:
         )
         rand = randint(2, 9999)
         score = int(3 / log10(rand)) + 1
-        self.foods.add(Food(position, score, Colours.RANDOM()))
+        self.foods.add(Food(position, score, Colors.GREEN))
 
     def check_exit(self, event):
         """Check if the user exited"""
@@ -103,21 +111,35 @@ class Game:
 
     def draw_text(self, text, position):
         self.window.blit(
-            self.font.render(text, True, Colours.WHITE.value),
+            self.font.render(text, True, Colors.WHITE.value),
             position
         )
 
+    def draw_snake(self, snake):
+        snake_head = snake.head()
+        for segment in snake:
+            if snake_head is segment:
+                pyellipse(
+                    self.screen,
+                    snake.get_color(),
+                    self.block(segment)
+                )
+            else:
+                pyarc(
+                    self.screen,
+                    snake.get_color(),
+                    self.block(segment), 0, 360,
+                    self.block_size//4
+                )
+
     def render(self):
-        self.window.fill(Colours.BACKGROUND.value)
-        self.screen.fill(Colours.WHITE.value)
-        for segment in self.snake:
-            pygame.draw.ellipse(
-                self.screen,
-                self.snake.get_color(),
-                self.block(segment)
-            )
+        self.window.fill(Colors.BACKGROUND.value)
+        self.screen.fill(Colors.WHITE.value)
+        self.draw_snake(self.snake)
+        for snake in self.snakes:
+            self.draw_snake(snake)
         for food in self.foods:
-            pygame.draw.rect(
+            pyrect(
                 self.screen,
                 food.get_color(),
                 self.block(food.get_position())
@@ -133,6 +155,8 @@ class Game:
 
     def update(self, δt):
         self.snake.update(δt, self.next_direction.value)
+        for snake in self.snakes:
+            snake.update(δt, Direction.RANDOM().value)
         head = self.snake.head()
         for food in self.foods:
             if food.get_position() == head:
@@ -144,6 +168,10 @@ class Game:
             self.running = False
         if not self.world.collidepoint(head):
             self.snake.loop(*self.boundary)
+        for snake in self.snakes:
+            head = snake.head()
+            if not self.world.collidepoint(head):
+                snake.loop(*self.boundary)
 
     def run(self):
         while True:
@@ -163,6 +191,6 @@ class Game:
 
 if __name__ == "__main__":
     pygame.init()
-    game = Game()
+    game = SnakeGame()
     game.run()
     game.quit()
