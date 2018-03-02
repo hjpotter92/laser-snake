@@ -7,11 +7,6 @@ logger = logging.getLogger('laser-snake.client')
 logger.setLevel(logging.DEBUG)
 
 
-def write_to_file(line):
-    with open('f', 'a+') as fp:
-        fp.write(str(line) + '\n')
-
-
 class Client(asyncio.DatagramProtocol):
     """docstring for Client"""
     def __init__(self):
@@ -45,12 +40,14 @@ class Client(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         data = self.parse_packet(data)
-        action = data.get('action')
-        game_id = data.get('game_id')
         logger.info(data)
-        write_to_file(data)
-        if None in (game_id, action):
+        action = data.get('action')
+        if action is None:
             return
+        if action == 'error':
+            logger.error(data.get('error'))
+            return
+        game_id = data.get('game_id')
 
 
 if __name__ == "__main__":

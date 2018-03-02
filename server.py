@@ -57,15 +57,11 @@ class Game:
     def __len__(self):
         return len(self.players)
 
+    def is_running(self):
+        return self._running
+
     def can_start(self):
         return len(self) >= self.max_players
-
-    def start_game(self):
-        start_data = {
-            'action': 'start'
-        }
-        self._running = True
-        self.broadcast(start_data)
 
     def send_message(self, player, message):
         if not isinstance(message, dict):
@@ -84,8 +80,15 @@ class Game:
         self.players.append(player)
         return player
 
-    def is_running(self):
-        return self._running
+    def start_game(self):
+        start_data = {
+            'action': 'start'
+        }
+        self._running = True
+        self.broadcast(start_data)
+
+    def process_action(self, action, data):
+        print(action)
 
 
 class Server(asyncio.DatagramProtocol):
@@ -111,6 +114,13 @@ class Server(asyncio.DatagramProtocol):
             for k, v in data.items()
         }
 
+    def send_error(self, addr, message):
+        error_data = {
+            'action': 'error',
+            'error': message
+        }
+        self._transport.sendto(dumps(error_data), addr)
+
     def join_game(self, data, addr):
         game = self.get_game()
         player = game.add_player(addr)
@@ -125,11 +135,13 @@ class Server(asyncio.DatagramProtocol):
         if action == 'join':
             print(f'receieved join from {addr}')
             self.join_game(data, addr)
+            return
         game_id = data.get('game_id')
-        game = self.games.get(game_id)
-
-    def transmit(self, message, player):
-        self._transport.sendto(message, player.address)
+        game = self.get_game(game_id)
+        if game is None:
+            self.send_error(addr, 'No such game exists')
+            return
+        game.process_action(action, data)
 
     def generate_id(self):
         return uuid4().hex.upper()
