@@ -15,8 +15,7 @@ GAME_FPS = 30
 GAME_WINDOW = GAME_WIDTH, GAME_HEIGHT = 1280, 720
 GAME_FULLSCREEN = False
 
-BLOCK_SIZE = 16
-WORLD_SIZE = Vector((30, 30))
+WORLD_SIZE = Vector((16, 16))
 
 KEY_DIRECTION = {
     K_w: Direction.UP,
@@ -37,10 +36,12 @@ class SnakeGame:
     """
     title = "Laser Snake"
 
-    def __init__(self):
-        self.block_size = BLOCK_SIZE
+    def __init__(self, *, world_size=None):
+        pygame.init()
+        world_size = Vector(world_size) if world_size else WORLD_SIZE
+        self.block_size = 480 // world_size[0]
         self.window = pygame.display.set_mode(GAME_WINDOW, GAME_FULLSCREEN)
-        self.screen = pygame.Surface(WORLD_SIZE * BLOCK_SIZE)
+        self.screen = pygame.Surface(world_size * self.block_size)
         self.clock = pygame.time.Clock()
         self.world = pygame.Rect((0, 0), WORLD_SIZE)
         self.boundary = (

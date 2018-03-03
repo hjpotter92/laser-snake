@@ -30,7 +30,8 @@ class Vector(tuple):
 def random_vector(topleft, bottomright, exceptions=None):
     ranges = list(zip(topleft, bottomright))
     exceptions = list(map(Vector, set(exceptions or [])))
-    point = Vector(tuple(randint(*x) for x in ranges))
-    while point in exceptions:
+    while True:
         point = Vector(tuple(randint(*x) for x in ranges))
+        if point not in exceptions:
+            return point
     return point

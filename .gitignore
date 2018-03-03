@@ -203,3 +203,7 @@ GitHub.sublime-settings
 
 
 # End of https://www.gitignore.io/api/git,emacs,python,sublimetext
+
+# Custom ignored patterns
+*.log
+*.log.*
