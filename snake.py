@@ -23,6 +23,25 @@ class Snake:
     def __iter__(self):
         return iter(self.segments)
 
+    def get_score(self):
+        return self.length
+
+    def get_speed(self):
+        return self.speed
+
+    def get_color(self):
+        return self.color.value
+
+    def get_direction(self):
+        return self.__direction
+
+    def set_direction(self, direction):
+        if self.__direction != -direction:
+            self.__direction = direction
+
+    def set_timer(self):
+        self.__timer = 1.0 / self.speed
+
     def head(self):
         return self.segments[0]
 
@@ -51,25 +70,6 @@ class Snake:
         elif self.get_direction() == Direction.DOWN.value:
             new_vector = Vector((head[0], topleft[1]))
         self.extend(new_vector - self.get_direction())
-
-    def get_score(self):
-        return self.length
-
-    def get_speed(self):
-        return self.speed
-
-    def get_color(self):
-        return self.color.value
-
-    def get_direction(self):
-        return self.__direction
-
-    def set_direction(self, direction):
-        if self.__direction != -direction:
-            self.__direction = direction
-
-    def set_timer(self):
-        self.__timer = 1.0 / self.speed
 
     def update(self, δt, direction):
         self.__timer -= δt
