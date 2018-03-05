@@ -1,15 +1,13 @@
-class Food:
-    """docstring for Food"""
-    def __init__(self, position, score=1, color=None):
-        self.position = position
-        self.score = score
-        self.color = color
+from collections import namedtuple
 
-    def get_position(self):
-        return self.position
+Food = namedtuple('Food', ['position', 'score'])
 
-    def get_score(self):
-        return self.score
 
-    def get_color(self):
-        return self.color.value
+def package_food(self):
+    return {
+        'position': tuple(self.position),
+        'score': self.score
+    }
+
+
+Food.packet = package_food

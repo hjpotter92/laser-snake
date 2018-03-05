@@ -16,6 +16,10 @@ def parse_packet(data):
                 k.decode(): decode(v)
                 for k, v in obj.items()
             }
+        if isinstance(obj, (tuple, list)):
+            return type(obj)(
+                decode(x) for x in obj
+            )
         return obj
     data = loads(data)
     return decode(data)

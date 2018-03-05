@@ -31,6 +31,17 @@ class Snake:
     def head(self):
         return self.segments[0]
 
+    @property
+    def direction(self):
+        return self.__direction
+
+    @direction.setter
+    def direction(self, value):
+        if not isinstance(value, Vector):
+            raise TypeError("Vector expected")
+        if self.direction != -value:
+            self.__direction = value
+
     def get_score(self):
         return self.length
 
@@ -40,21 +51,14 @@ class Snake:
     def get_color(self):
         return self.color.value
 
-    def get_direction(self):
-        return self.__direction
-
-    def set_direction(self, direction):
-        if self.__direction != -direction:
-            self.__direction = direction
-
     def set_timer(self):
         self.__timer = 1.0 / self.speed
 
     def extend(self, segment=None):
-        if self.get_direction() == Direction.NULL.value:
+        if self.direction == Direction.NULL.value:
             return
         self.segments.appendleft(
-            (segment or self.head) + self.get_direction()
+            (segment or self.head) + self.direction
         )
 
     def suicide(self):
@@ -66,22 +70,22 @@ class Snake:
 
     def loop(self, topleft, bottomright):
         head = self.head
-        if self.get_direction() == Direction.RIGHT.value:
+        if self.direction == Direction.RIGHT.value:
             new_vector = Vector((topleft[0], head[1]))
-        elif self.get_direction() == Direction.UP.value:
+        elif self.direction == Direction.UP.value:
             new_vector = Vector((head[0], bottomright[1]))
-        elif self.get_direction() == Direction.LEFT.value:
+        elif self.direction == Direction.LEFT.value:
             new_vector = Vector((bottomright[0], head[1]))
-        elif self.get_direction() == Direction.DOWN.value:
+        elif self.direction == Direction.DOWN.value:
             new_vector = Vector((head[0], topleft[1]))
-        self.extend(new_vector - self.get_direction())
+        self.extend(new_vector - self.direction)
 
     def update(self, δt, direction):
         self.__timer -= δt
         if self.__timer > 0:
             return
         self.set_timer()
-        self.set_direction(direction)
+        self.direction = direction
         self.extend()
         for _ in range(0, len(self) - self.length):
             self.segments.pop()
