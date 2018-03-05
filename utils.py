@@ -8,8 +8,14 @@ TIME = lambda: int(time())
 
 
 def parse_packet(data):
+    def decode(obj):
+        if isinstance(obj, bytes):
+            return obj.decode()
+        if isinstance(obj, dict):
+            return {
+                k.decode(): decode(v)
+                for k, v in obj.items()
+            }
+        return obj
     data = loads(data)
-    return {
-        k.decode(): v.decode() if isinstance(v, bytes) else v
-        for k, v in data.items()
-    }
+    return decode(data)
