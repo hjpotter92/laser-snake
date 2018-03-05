@@ -23,6 +23,14 @@ class Snake:
     def __iter__(self):
         return iter(self.segments)
 
+    @property
+    def blocks(self):
+        return [tuple(pos) for pos in self]
+
+    @property
+    def head(self):
+        return self.segments[0]
+
     def get_score(self):
         return self.length
 
@@ -42,25 +50,22 @@ class Snake:
     def set_timer(self):
         self.__timer = 1.0 / self.speed
 
-    def head(self):
-        return self.segments[0]
-
     def extend(self, segment=None):
         if self.get_direction() == Direction.NULL.value:
             return
         self.segments.appendleft(
-            (segment or self.head()) + self.get_direction()
+            (segment or self.head) + self.get_direction()
         )
 
     def suicide(self):
-        return self.segments.count(self.head()) > 1
+        return self.segments.count(self.head) > 1
 
     def grow(self, value=1):
         self.length += value
         self.speed += SNAKE_SPEED_MULTIPLIER * value
 
     def loop(self, topleft, bottomright):
-        head = self.head()
+        head = self.head
         if self.get_direction() == Direction.RIGHT.value:
             new_vector = Vector((topleft[0], head[1]))
         elif self.get_direction() == Direction.UP.value:
