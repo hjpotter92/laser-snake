@@ -1,8 +1,7 @@
 import asyncio
 
 from collections import deque
-from math import log10
-from random import choice, randint
+from random import choice
 from uuid import uuid4
 
 from rencode import dumps
@@ -13,7 +12,7 @@ from snake import Snake
 from utils import TIME, parse_packet
 from vector import Vector, random_vector
 
-GAME_FPS = 30
+GAME_FPS = 15
 GAME_TICKER = 1 / GAME_FPS
 
 
@@ -46,6 +45,12 @@ class Player:
     def alive(self):
         return self._alive
 
+    @alive.setter
+    def alive(self, value):
+        if value is False:
+            self.direction = Direction.NULL
+        self._alive = value
+
     @property
     def topleft(self):
         return self.boundary[0]
@@ -64,7 +69,8 @@ class Player:
     def direction(self, value):
         if not isinstance(value, Direction):
             raise TypeError("enum expected")
-        self.next_direction = value
+        if Direction.NULL not in (self.direction, self.next_direction):
+            self.next_direction = value
 
     def snake_packet(self):
         return {
@@ -99,6 +105,9 @@ class Player:
 
 class Game:
     """docstring for Game"""
+    score_weight = [1] * 50 + [2] * 25 + [3] * 13 + [4] * 12
+    food_count_weight = [1] * 75 + [2] * 20 + [3] * 5
+
     def __init__(self, id_, transport, loop, max_players=2, world_size=None):
         self._id = id_
         self._transport = transport
@@ -125,6 +134,14 @@ class Game:
             self.world_size - Direction.BOTTOM_RIGHT.value
         )
 
+    @property
+    def running(self):
+        return self._running
+
+    @running.setter
+    def running(self, value):
+        self._running = value
+
     def __len__(self):
         return len(self.players)
 
@@ -145,9 +162,6 @@ class Game:
             last_tick = self.loop.time()
             return δt
         return wrapped
-
-    def is_running(self):
-        return self._running
 
     def can_start(self):
         return len(self) >= self.max_players
@@ -189,14 +203,22 @@ class Game:
         for player in self.players:
             exceptions += player.snake.blocks
         for food in self.foods:
-            exceptions += food.position
-        position = random_vector(
-            *self.boundary,
-            exceptions=exceptions
-        )
-        rand = randint(2, 9999)
-        score = int(3 / log10(rand)) + 1
-        self.foods.add(Food(position, score))
+            exceptions.append(food.position)
+        for _ in range(choice(self.food_count_weight)):
+            position = random_vector(
+                *self.boundary,
+                exceptions=exceptions
+            )
+            exceptions.append(position)
+            score = choice(self.score_weight)
+            self.foods.add(Food(position, score))
+
+    def eats(self, player):
+        for food in self.foods.copy():
+            if player.snake.head == food.position:
+                self.foods.remove(food)
+                player.snake.grow(food.score)
+                self.generate_food()
 
     def add_player(self, *args):
         player = Player(self.id, len(self), *args, boundary=self.boundary)
@@ -211,7 +233,7 @@ class Game:
             'snakes': [player.snake_packet() for player in self.players]
         }
         self.generate_food()
-        self._running = True
+        self.running = True
         self.broadcast(start_data)
         self.loop.create_task(self.run(GAME_TICKER))
 
@@ -219,23 +241,43 @@ class Game:
         for player in self.players:
             player.update(δt)
             player.check_bounds()
-        self.broadcast({
-            'action': 'objects',
-            'snakes': [player.snake_packet() for player in self.players],
-            'foods': [food.packet() for food in self.foods]
-        })
+            if player.snake.suicide():
+                player.alive = False
+            self.eats(player)
+
+    def check_deaths(self):
+        for player1 in self.players:
+            for player2 in self.players:
+                if player1 == player2:
+                    continue
+                if player2.snake.head in player1.snake.segments:
+                    player2.alive = False
+
+    def game_over(self):
+        return len([p for p in self.players if p.alive is True]) == 1
 
     async def run(self, ticker):
-        await asyncio.sleep(1)
-        while self.is_running():
+        while self.running:
             tick = await asyncio.sleep(ticker, result=self.get_tick())
             δt = tick()
             self.update(δt)
+            self.check_deaths()
+            self.broadcast({
+                'action': 'objects',
+                'snakes': [player.snake_packet() for player in self.players],
+                'foods': [food.packet() for food in self.foods]
+            })
+            if self.game_over():
+                self.running = False
+                self.broadcast({
+                    'action': 'over'
+                })
 
     def process_action(self, action, data):
         if action == "move":
             player = self.get_player(data.get('player_id'))
-            player.direction = Direction[data.get('direction').upper()]
+            if not player.dead:
+                player.direction = Direction[data.get('direction').upper()]
 
 
 class Server(asyncio.DatagramProtocol):
@@ -284,7 +326,7 @@ class Server(asyncio.DatagramProtocol):
         if game is None:
             self.send_error(addr, f"No such game exists for id `{game_id}`")
             return
-        if game.is_running():
+        if game.running:
             game.process_action(action, data)
             return
 
